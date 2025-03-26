@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Json where
 
@@ -82,21 +84,30 @@ data JSON = JSONString String
 --      wheel : { position : 3, inflated : true }
 --      wheel : { position : 4, inflated : true }
 --   }
--- We are making this exact object, not a general car JSON object.
+-- We are making this exact object, nSot a general car JSON object.
 make_car :: JSON
-make_car = error "make_car undefined"
+make_car = JSONObject [("make", JSONString "Ford"),
+                       ("model", JSONNull),
+                       ("weight", JSONNumber 32),
+                       ("running", JSONFalse),
+                       ("wheel", JSONObject [("position", JSONNumber 1), ("inflated", JSONTrue)]),
+                       ("wheel", JSONObject [("position", JSONNumber 2), ("inflated", JSONTrue)]),
+                       ("wheel", JSONObject [("position", JSONNumber 3), ("inflated", JSONTrue)]),
+                       ("wheel", JSONObject [("position", JSONNumber 4), ("inflated", JSONTrue)])]
 
 -- Problem 2:
 -- write a function to find a value in the JSON object matching the given key.
 -- If no object exists, just return Nothing.
 find_one :: JSON -> String -> Maybe JSON
-find_one = error "find_one undefined"
+find_one js s = foldr (\(k,v) acc -> if k == s then Just v else acc) Nothing (get_pairs js)
+    where get_pairs (JSONObject x) = x
 
 -- Problem 3:
 -- Write a function to find all of the values that match a key.
 -- You should return the values as a list
-find :: JSON -> String -> Maybe JSON
-find = error "find undefined"
+find :: JSON -> String -> [JSON]
+find json s = foldr (\(k,v) acc -> if k == s then v:acc else acc) [] (get_pairs json)
+    where get_pairs (JSONObject x) = x
 
 -- Problem 4:
 -- Write a function to convert a JSON object to a string.
@@ -133,7 +144,20 @@ find = error "find undefined"
 --
 -- You might find the replicate function helpful.
 json_string :: JSON -> Int -> String
-json_string = error "json_string undefined"
+json_string js i = replicate i ' ' ++ json_to_string js i
+    where json_to_string (JSONString s) _ = "\"" ++ s ++ "\""
+          json_to_string (JSONNumber n) _ = show n
+          json_to_string JSONTrue _ = "true"
+          json_to_string JSONFalse _ = "false"
+          json_to_string JSONNull _ = "null"
+          json_to_string (JSONObject x) i = 
+            "{\n" ++ 
+            (case x of
+                [] -> ""
+                _  -> concatMap (\(k,v) -> replicate (i+2) ' ' ++ k ++ " : " ++ json_to_string v (i+2) ++ ",\n") (init x) ++
+                    let (k,v) = last x in replicate (i+2) ' ' ++ k ++ " : " ++ json_to_string v (i+2) ++ "\n"                 ) ++ 
+            replicate i ' ' ++ "}"
+          
 
 -- problem 5:
 -- Ok, we're finally at the last step.
@@ -177,8 +201,17 @@ json_string = error "json_string undefined"
 --
 -- I've given you a helper function to deal with the root object.
 to_xml :: JSON -> String
-to_xml json = "<Ojbect>\n " ++ json_to_xml json 2 ++ " </Object>"
+to_xml json = "<Object>" ++ json_to_xml json 2 ++ "</Object>"
 
 json_to_xml :: JSON -> Int -> String
-json_to_xml = error "json_to_xml undefined"
+json_to_xml js i = json_to_xml js i
+    where json_to_xml (JSONString s) _ = "\"" ++ s ++ "\""
+          json_to_xml (JSONNumber n) _ = show n
+          json_to_xml JSONTrue _ = "true"
+          json_to_xml JSONFalse _ = "false"
+          json_to_xml JSONNull _ = "null"
+          json_to_xml (JSONObject x) i = "\n" ++
+            (case x of
+                [] -> ""
+                _  -> concatMap (\(k,v) -> replicate i ' ' ++ "<" ++ k ++ ">" ++ json_to_xml v (i+2) ++ "<\\" ++ k ++ ">" ++ "\n") (init x)) ++ replicate (i-2) ' '
 

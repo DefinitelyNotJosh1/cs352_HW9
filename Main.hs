@@ -5,7 +5,7 @@ main = do print car
           printWeight (find_one car "weight")
           mapM_ printPosition (find car "position")
           putStrLn (json_string car 0)
-          putStrLn (to_xml car)
+          putStrLn ("\n" ++ to_xml car)
  where car = make_car
 
 printWeight :: Maybe JSON -> IO ()
