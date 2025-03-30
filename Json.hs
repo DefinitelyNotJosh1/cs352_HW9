@@ -1,3 +1,7 @@
+-- Authors: Joshua Krasnogorov and Stephen Libby
+-- Assignment 9: JSON in Haskell
+-- due date: 3/31/2025
+
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use camelCase" #-}
 
