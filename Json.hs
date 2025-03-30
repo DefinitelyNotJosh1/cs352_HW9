@@ -204,14 +204,13 @@ to_xml :: JSON -> String
 to_xml json = "<Object>" ++ json_to_xml json 2 ++ "</Object>"
 
 json_to_xml :: JSON -> Int -> String
-json_to_xml js i = json_to_xml js i
-    where json_to_xml (JSONString s) _ = "\"" ++ s ++ "\""
-          json_to_xml (JSONNumber n) _ = show n
-          json_to_xml JSONTrue _ = "true"
-          json_to_xml JSONFalse _ = "false"
-          json_to_xml JSONNull _ = "null"
-          json_to_xml (JSONObject x) i = "\n" ++
-            (case x of
-                [] -> ""
-                _  -> concatMap (\(k,v) -> replicate i ' ' ++ "<" ++ k ++ ">" ++ json_to_xml v (i+2) ++ "<\\" ++ k ++ ">" ++ "\n") (init x)) ++ replicate (i-2) ' '
+json_to_xml (JSONString s) _ = "\"" ++ s ++ "\""
+json_to_xml (JSONNumber n) _ = show n
+json_to_xml JSONTrue _ = "true"
+json_to_xml JSONFalse _ = "false"
+json_to_xml JSONNull _ = "null"
+json_to_xml (JSONObject x) i = 
+    case x of
+        [] -> ""
+        _  -> "\n" ++ concatMap (\(k,v) -> replicate i ' ' ++ "<" ++ k ++ ">" ++ json_to_xml v (i+2) ++ "</" ++ k ++ ">" ++ "\n") x ++ replicate (i-2) ' '
 
