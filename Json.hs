@@ -99,15 +99,26 @@ make_car = JSONObject [("make", JSONString "Ford"),
 -- write a function to find a value in the JSON object matching the given key.
 -- If no object exists, just return Nothing.
 find_one :: JSON -> String -> Maybe JSON
-find_one js s = foldr (\(k,v) acc -> if k == s then Just v else acc) Nothing (get_pairs js)
-    where get_pairs (JSONObject x) = x
+find_one json key = case json of
+    JSONObject pairs -> 
+        let directMatch = foldr (\(k,v) acc -> if k == key then Just v else acc) Nothing pairs
+        in case directMatch of
+            Just v  -> Just v
+            Nothing -> foldr (\(_,v) acc -> case find_one v key of
+                            Just found -> Just found
+                            Nothing -> acc) Nothing pairs
+    _ -> Nothing
 
 -- Problem 3:
 -- Write a function to find all of the values that match a key.
 -- You should return the values as a list
 find :: JSON -> String -> [JSON]
-find json s = foldr (\(k,v) acc -> if k == s then v:acc else acc) [] (get_pairs json)
-    where get_pairs (JSONObject x) = x
+find json key = case json of
+    JSONObject pairs -> 
+        let directMatches = foldr (\(k,v) acc -> if k == key then v:acc else acc) [] pairs
+            nestedMatches = concatMap (\(_,v) -> find v key) pairs
+        in directMatches ++ nestedMatches
+    _ -> []
 
 -- Problem 4:
 -- Write a function to convert a JSON object to a string.
